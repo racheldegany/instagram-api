@@ -83,7 +83,7 @@ class Users {
             });
             if(!user) return res.sendStatus(401);
             const token = jwt.sign({id: user._id}, config.secret);
-            res.cookie(config.cookieName, token, { maxAge: DURATION_60D}, {sameSite: 'None'});
+            res.cookie(config.cookieName, token, { maxAge: DURATION_60D, sameSite: 'None' });
             res.status(200).json(user);
         } catch(err) {
             console.log(err);
