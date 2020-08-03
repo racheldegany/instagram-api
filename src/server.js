@@ -5,8 +5,8 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const routes = require('./config/routes');
 const app = express();
-const port = 4000;
 const config = require('./config/env/index');
+const port = 4000;
 
 app.use(cors({
     origin: true,
