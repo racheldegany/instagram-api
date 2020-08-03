@@ -18,7 +18,7 @@ const User = new mongoose.model ('User', {
     avatar: String,
     bio: {
         type: String,
-        maxlength: 300
+        maxlength: 2000
         
     },
     createdAt: {

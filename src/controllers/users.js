@@ -2,6 +2,7 @@ const md5 = require('md5');
 const User = require('../models/user');
 const config = require('../config/env/index');
 const Post = require('../models/post');
+const jwt = require('jsonwebtoken');
 const ERROR_DUPLICATE_VALUE = 11000;
 const DURATION_60D = 60 * 60 * 24 * 60 * 1000;
 
@@ -23,13 +24,33 @@ class Users {
     }
 
     async editProfile(req, res) {
+        //avatar: req.file.filename
         try{
-            const { username, bio, email } = req.body
-            const updateValues = { username, avatar: req.file.filename ,bio, email}
+        if (req.user.id !== req.params.id) return res.sendStatus(403);
+            const { username, bio, email } = req.body;
+            const updateValues = { username ,bio, email,};
+            console.log(updateValues);
+            for (const key in updateValues) {
+                // if(key === 'bio') {
+                //     return;
+                // } this doesnt work
+                if(updateValues[key] === '') {
+                    delete updateValues[key] ;
+                }
+            }
+            if(req.file) {
+                updateValues.avatar = req.file.filename;
+            }
+            console.log(updateValues);
+            if(Object.keys(updateValues).length === 0) {
+                res.sendStatus(400);
+                return;
+            }
             const user = await User.findByIdAndUpdate(req.params.id, 
                 updateValues,
                 {new: true}
             );
+            console.log(user);
             res.json(user);
         } catch(err) {
             console.log(err);
@@ -61,9 +82,11 @@ class Users {
                 password: userToSearch.password
             });
             if(!user) return res.sendStatus(401);
-            res.cookie(config.cookieName, user._id, { maxAge: DURATION_60D});
+            const token = jwt.sign({id: user._id}, config.secret);
+            res.cookie(config.cookieName, token, { maxAge: DURATION_60D});
             res.status(200).json(user);
-        } catch {
+        } catch(err) {
+            console.log(err);
             res.sendStatus(500);
         }  
     } 
@@ -113,6 +136,18 @@ class Users {
 
     me(req, res) {
         res.json(req.user);
+    }
+
+    async getUser (req, res) {
+        try{
+            const user = await User.findById(req.params.id)
+                .select(['username', 'bio', 'avatar', 'createdAt']);
+            if(!user) res.sendStatus(404);
+            res.json(user);
+        } catch(err){
+            console.log(err);
+            res.sendStatus(500);
+        }
     }
 }
 

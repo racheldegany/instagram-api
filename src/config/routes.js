@@ -4,6 +4,7 @@ const posts = require('../controllers/posts');
 const auth = require('../middleware/auth');
 const pathSelection = require('../middleware/pathSelection');
 const multer = require('multer');
+const comments = require('../controllers/comments');
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
       cb(null, 'public/' + req.type)
@@ -26,11 +27,19 @@ routes.post('/users/login', users.login);
 routes.get('/users/check', users.check );
 routes.get('/users/me', auth, users.me);
 routes.get('/users/:id/posts',auth, users.getPosts);
-routes.post('/users/:id', pathSelection('avatars'), upload.single('image'), users.editProfile)
+routes.post('/users/:id',auth, pathSelection('avatars'), upload.single('image'), users.editProfile);
+routes.get('/users/:id', auth, users.getUser);
 
+routes.delete('/posts/:id/likes/:userId',auth, posts.unlike);
+routes.post('/posts/:id/likes',auth, posts.like); 
+routes.get('/posts/:id', auth, posts.getPost)
 routes.put('/posts', auth, pathSelection('posts'), upload.single('image'), posts.create);
 routes.get('/posts', auth, posts.getAll);
-routes.post('/posts/:id/likes',auth, posts.handleLike); //continue likes
+
+routes.put('/posts/:id/comment',auth, comments.create);
+routes.get('/posts/:id/comment',auth, comments.getComments);
+
+//continue likes
 
 
 routes.get('/health', (req, res) => {

@@ -27,11 +27,23 @@ class Posts {
             res.status(200).json(posts);
         } catch(err) {
             console.log(err);
-            res.sendStatus(400);
+            res.sendStatus(500);
         } 
     }
 
-    async handleLike(req, res) {
+    async getPost(req, res) {
+        try{
+            const post = await Post.findById(req.params.id)
+            .populate('user', ['avatar', 'username']);
+            if(!post) return res.sendStatus(404);
+            res.json(post);
+        } catch(err){
+            console.log(err);
+            res.sendStatus(500);
+        }
+    }
+
+    async like(req, res) {
         try {
             // const filter = {_id: ObjectId(req.params.id)} 
             const post = await Post.findByIdAndUpdate(req.params.id, 
@@ -50,6 +62,21 @@ class Posts {
             res.sendStatus(400);
         }
     }
+
+    async unlike(req, res) {
+		if (req.user._id.toString() !== req.params.userId) {
+			res.sendStatus(403);
+			return;
+		}
+		try {
+            const post = await Post.findByIdAndUpdate(req.params.id, 
+                {$pull: {likes: req.user._id}},
+                {new: true});
+			res.json(post);
+		} catch(err) {
+			res.status(500).json(err);
+		}
+	}
 }
 
 
