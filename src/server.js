@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const routes = require('./config/routes');
 const app = express();
 const config = require('./config/env/index');
-const port = 4000;
+const port = config.port;
 
 app.use(cors({
     origin: true,
