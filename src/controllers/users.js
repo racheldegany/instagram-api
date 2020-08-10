@@ -28,20 +28,15 @@ class Users {
         try{
         if (req.user.id !== req.params.id) return res.sendStatus(403);
             const { username, bio, email } = req.body;
-            const updateValues = { username ,bio, email,};
-            console.log(updateValues);
+            const updateValues = { username ,bio, email };
             for (const key in updateValues) {
-                // if(key === 'bio') {
-                //     return;
-                // } this doesnt work
-                if(updateValues[key] === '') {
+                if(updateValues[key] === undefined || updateValues[key] === req.user[key]) {
                     delete updateValues[key] ;
                 }
             }
             if(req.file) {
                 updateValues.avatar = req.file.filename;
             }
-            console.log(updateValues);
             if(Object.keys(updateValues).length === 0) {
                 res.sendStatus(400);
                 return;
@@ -50,7 +45,6 @@ class Users {
                 updateValues,
                 {new: true}
             );
-            console.log(user);
             res.json(user);
         } catch(err) {
             console.log(err);
@@ -74,6 +68,8 @@ class Users {
 
     async login(req, res) {
         const userToSearch = req.body;
+        const cookieParms = !config.dev ?  { maxAge: DURATION_60D, sameSite: 'None', secure: true }
+                                        : { maxAge: DURATION_60D }
         
         userToSearch.password = md5(userToSearch.password);
         try {
@@ -83,7 +79,7 @@ class Users {
             });
             if(!user) return res.sendStatus(401);
             const token = jwt.sign({id: user._id}, config.secret);
-            res.cookie(config.cookieName, token, { maxAge: DURATION_60D, sameSite: 'None', secure: true });
+            res.cookie(config.cookieName, token, cookieParms );
             res.status(200).json(user);
         } catch(err) {
             console.log(err);
@@ -101,11 +97,17 @@ class Users {
 			return;
 		}
         let property = email ? 'email' : 'username';
+
+        if (req.user[property] === req.query[property]) {
+            res.json(false);
+            return;
+        }
         
         try {
             const isExist = await User.exists({
 				[property]: req.query[property]
-			});
+            });
+            console.log(isExist);
             res.json(isExist);
             
         } catch(err) {

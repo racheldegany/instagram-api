@@ -53,7 +53,6 @@ class Posts {
                 res.sendStatus(400);
                 return;
             }
-            console.log(post);
             
             res.json(post);
 

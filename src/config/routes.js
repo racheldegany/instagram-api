@@ -24,7 +24,7 @@ const routes = express.Router();
 routes.get('/users', auth, users.searchAll);
 routes.put('/users', users.create);
 routes.post('/users/login', users.login);
-routes.get('/users/check', users.check );
+routes.get('/users/check', auth, users.check );
 routes.get('/users/me', auth, users.me);
 routes.get('/users/:id/posts',auth, users.getPosts);
 routes.post('/users/:id',auth, pathSelection('avatars'), upload.single('image'), users.editProfile);
