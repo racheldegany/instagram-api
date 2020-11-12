@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const {ObjectId} = mongoose.Types;
 
 const User = new mongoose.model ('User', {
     username: {
@@ -21,6 +22,7 @@ const User = new mongoose.model ('User', {
         maxlength: 2000
         
     },
+    savedPosts: [ObjectId],
     createdAt: {
         type: Date,
         default: () => {return new Date()}

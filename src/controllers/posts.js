@@ -1,5 +1,7 @@
 const Post = require('../models/post');
+const User = require('../models/user');
 const mongoose = require('mongoose');
+const { json } = require('body-parser');
 const {ObjectId} = mongoose.Types;
 
 class Posts {
@@ -25,6 +27,42 @@ class Posts {
                 .populate('user', ['avatar', 'username'])
                 .sort({createdAt: req.query.sort || 1});
             res.status(200).json(posts);
+        } catch(err) {
+            console.log(err);
+            res.sendStatus(500);
+        } 
+    }
+
+   
+
+    async getLikes(req, res){
+        try{
+            const post = await Post.findById(req.params.id);
+            const likes = post.likes;
+            const users = [];
+            for(let i=0; i<likes.length; i++){
+                const user = await User.findById(likes[i])
+                    .select(['username','avatar']);
+                    users.push(user);
+            };
+            res.json(users);
+        }catch(err){
+            console.log(err);
+            res.sendStatus(500);
+        }
+    }
+
+    async random(req, res){
+        console.log(req.user.id, req.user._id);
+        try{
+            const posts = await Post.find({
+                _id: {
+                    $ne: req.user._id
+                }
+            })
+                .populate('user', ['avatar', 'username']);
+            const post = posts[Math.floor(Math.random() * posts.length)];
+            res.status(200).json(post);
         } catch(err) {
             console.log(err);
             res.sendStatus(500);
@@ -63,14 +101,33 @@ class Posts {
     }
 
     async unlike(req, res) {
-		if (req.user._id.toString() !== req.params.userId) {
+		// if (req.user._id.toString() !== req.params.userId) {
+		// 	res.sendStatus(403);
+		// 	return;
+		// }
+		// try {
+        //     console.log('delete');
+        //     const post = await Post.findByIdAndUpdate(req.params.userId, 
+        //         {$pull: {likes: req.params.userId}},
+        //         {new: true});
+		// 	res.json(post);
+		// } catch(err) {
+		// 	res.status(500).json(err);
+        // }
+        if (req.user._id.toString() !== req.params.userId) {
 			res.sendStatus(403);
 			return;
 		}
 		try {
-            const post = await Post.findByIdAndUpdate(req.params.id, 
-                {$pull: {likes: req.user._id}},
-                {new: true});
+			const post = await Post.findOneAndUpdate({
+				_id: req.params.id
+			}, {
+				$pull: {
+					likes: req.user._id
+				}
+			}, {
+				new: true
+			});
 			res.json(post);
 		} catch(err) {
 			res.status(500).json(err);

@@ -86,6 +86,29 @@ class Users {
             res.sendStatus(500);
         }  
     } 
+    async checkRegister(req, res){
+        const {username, email} = req.query;
+
+        if (!username && !email) {
+			res.sendStatus(400);
+			return;
+		}
+        let property = email ? 'email' : 'username';
+        
+        try {
+            const isExist = await User.exists({
+				[property]: req.query[property]
+            });
+            console.log(isExist);
+            res.json(isExist);
+            
+        } catch(err) {
+            console.log(err);
+            res.sendStatus(400);
+            
+        }
+
+    }
 
     
 
@@ -107,7 +130,6 @@ class Users {
             const isExist = await User.exists({
 				[property]: req.query[property]
             });
-            console.log(isExist);
             res.json(isExist);
             
         } catch(err) {
@@ -118,6 +140,23 @@ class Users {
         
     }
     
+    async savePost(req, res) {
+        try {
+            const user = await User.findByIdAndUpdate(req.user._id, 
+                {$addToSet: {savedPosts: req.params.id}},
+                {new: true});   
+            if(!user){
+                res.sendStatus(400);
+                return;
+            }
+            
+            res.json(user);
+
+        } catch(err) {
+            console.log(err);
+            res.sendStatus(400);
+        }
+    }
 
     async create(req, res){
         const newUser = new User(req.body);

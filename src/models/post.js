@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const {ObjectId} = mongoose.Types
+const {ObjectId} = mongoose.Types;
 
 const Post = new mongoose.model ('Post', {
     user: {

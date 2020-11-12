@@ -22,8 +22,10 @@ const upload = multer({ storage: storage });
 const routes = express.Router();
 
 routes.get('/users', auth, users.searchAll);
+routes.post('/users/savePost/:id', auth, users.savePost);
 routes.put('/users', users.create);
 routes.post('/users/login', users.login);
+routes.get('/users/register', users.checkRegister);
 routes.get('/users/check', auth, users.check );
 routes.get('/users/me', auth, users.me);
 routes.get('/users/:id/posts',auth, users.getPosts);
@@ -31,8 +33,10 @@ routes.post('/users/:id',auth, pathSelection('avatars'), upload.single('image'),
 routes.get('/users/:id', auth, users.getUser);
 
 routes.delete('/posts/:id/likes/:userId',auth, posts.unlike);
+routes.get('/posts/:id/likes', auth, posts.getLikes);
 routes.post('/posts/:id/likes',auth, posts.like); 
-routes.get('/posts/:id', auth, posts.getPost)
+routes.get('/posts/random', auth, posts.random);
+routes.get('/posts/:id', auth, posts.getPost);
 routes.put('/posts', auth, pathSelection('posts'), upload.single('image'), posts.create);
 routes.get('/posts', auth, posts.getAll);
 
